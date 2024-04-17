@@ -9,16 +9,18 @@ import React from "react";
 export default function OTPInbox() {
   const [frontmostApp, setFrontmostApp] = React.useState<string>("");
   const [verificationCodes, setVerificationCodes] = React.useState<VerificationCode[] | null>(null);
+  const [recentEmails, setRecentEmails] = React.useState<VerificationCode[]>([]);
 
   async function getVerificationCodes() {
     // Get the emails
     const emails = await getEmails();
 
     // Process emails
-    const codes = processEmails(emails);
+    const { recentEmails, verificationCodes } = processEmails(emails);
 
-    // Set the verification codes
-    return codes;
+    // Set states
+    setRecentEmails(recentEmails);
+    setVerificationCodes(verificationCodes);
   }
 
   React.useEffect(() => {
@@ -27,8 +29,8 @@ export default function OTPInbox() {
         // Set the frontmost app
         setFrontmostApp((await getFrontmostApplication()).name);
 
-        // Set the verification codes
-        setVerificationCodes(await getVerificationCodes());
+        // Get verification codes
+        await getVerificationCodes();
       } catch (error) {
         console.log("No verification codes found");
       }
@@ -59,7 +61,7 @@ export default function OTPInbox() {
                     icon={{ source: Icon.Paperclip, tintColor: Color.PrimaryText }}
                     onAction={async () => {
                       const app = await getFrontmostApplication();
-                      await Clipboard.paste(code.code);
+                      await Clipboard.paste(code.code!);
                       await showHUD(`Pasted code for ${code.sender} to ${app.name}`, { clearRootSearch: true });
                     }}
                   />
@@ -67,7 +69,7 @@ export default function OTPInbox() {
                     title={`Copy code to clipboard`}
                     icon={{ source: Icon.Clipboard }}
                     onAction={async () => {
-                      await Clipboard.copy(code.code);
+                      await Clipboard.copy(code.code!);
                       await showHUD(`Copied code for ${code.sender} to clipboard`, { clearRootSearch: true });
                     }}
                   />
@@ -83,8 +85,31 @@ export default function OTPInbox() {
                     shortcut={{ modifiers: ["cmd"], key: "r" }}
                     onAction={() => {
                       setVerificationCodes(null);
-                      getVerificationCodes().then(setVerificationCodes);
                     }}
+                  />
+                </ActionPanel>
+              }
+            />
+          ))}
+        </List.Section>
+        <List.Section title="Recent Emails">
+          {recentEmails.map((email) => (
+            <List.Item
+              key={email.receivedAt.toISOString()}
+              title={email.sender}
+              subtitle={email.email}
+              accessories={[
+                {
+                  text: `${getTimeAgo(email.receivedAt)} ago`,
+                },
+              ]}
+              actions={
+                <ActionPanel>
+                  <Action.Push
+                    title="Show Email Content"
+                    icon={{ source: Icon.Text }}
+                    shortcut={{ modifiers: ["cmd"], key: "e" }}
+                    target={<Detail markdown={`### Email from ${email.sender}\n\n${email.emailText}`} />}
                   />
                 </ActionPanel>
               }
@@ -99,9 +124,9 @@ export default function OTPInbox() {
               <Action
                 title="Refresh"
                 icon={{ source: Icon.ArrowClockwise }}
-                onAction={() => {
+                onAction={async () => {
                   setVerificationCodes(null);
-                  getVerificationCodes().then(setVerificationCodes);
+                  await getVerificationCodes();
                 }}
               />
             </ActionPanel>

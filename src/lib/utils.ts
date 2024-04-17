@@ -3,9 +3,8 @@ import { VerificationCode } from "./types";
 export function extractVerificationCode(text: string): string {
   const patterns: RegExp[] = [
     /\b\w*(?:-\w*)+\b/g, // Pattern for codes with hyphen
-    /\b\d{3,4}\s?\d{3,4}\b/g, // Pattern for 6-8 digit numeric codes with optional space
+    /\b\d{6,8}\b|\b\d{3,4}\s\d{3,4}\b/g, // Pattern for 6-8 digit numeric codes with or without space
   ];
-
   const verificationCodes: string[] = [];
 
   // Extract the verification codes
@@ -26,17 +25,29 @@ export function extractVerificationCode(text: string): string {
     }
   }
 
+  // If theres still more than one code, prioritize digit ones
+  if (verificationCodes.length > 1) {
+    const digitCodes = verificationCodes.filter((code) => /^\d+$/.test(code));
+    if (digitCodes.length > 0) {
+      return digitCodes[0];
+    }
+  }
+
   return verificationCodes[0] || "";
 }
 
-export function processEmails(emails: any[]): VerificationCode[] {
+export function processEmails(emails: any[]): {
+  recentEmails: VerificationCode[];
+  verificationCodes: VerificationCode[];
+} {
   // Valiadate if there are emails
   if (!emails || emails.length === 0) {
     console.log("No emails found");
-    return [];
+    return { recentEmails: [], verificationCodes: [] };
   }
 
   // List of verification codes
+  const recentEmails: VerificationCode[] = [];
   const verificationCodes: VerificationCode[] = [];
 
   // Loop through the emails
@@ -45,12 +56,21 @@ export function processEmails(emails: any[]): VerificationCode[] {
       // Email headers
       const headers = email["payload"]["headers"];
 
+      // Decode body
+      const body = decodeEmailBody(email["payload"]);
+
       // Extract the verification code from the email
-      const verificationCode = extractVerificationCode(atob(email["payload"]["parts"][0]["body"]["data"]));
+      const verificationCode = extractVerificationCode(body);
 
       if (!verificationCode) {
-        console.log("No verification code found");
-        return;
+        // Add the email to the list of recent emails
+        return recentEmails.push({
+          code: null,
+          email: headers[0]["value"],
+          receivedAt: new Date(parseInt(email["internalDate"], 10)),
+          sender: headers.find((header: any) => header.name === "From").value?.split(" ")[0],
+          emailText: body,
+        });
       }
 
       // Add the verification code to the list
@@ -59,14 +79,14 @@ export function processEmails(emails: any[]): VerificationCode[] {
         email: headers[0]["value"],
         receivedAt: new Date(parseInt(email["internalDate"], 10)),
         sender: headers.find((header: any) => header.name === "From").value?.split(" ")[0],
-        emailText: atob(email["payload"]["parts"][0]["body"]["data"]),
+        emailText: body,
       });
     } catch (error) {
       console.log("Failed to process email", error);
     }
   });
 
-  return verificationCodes;
+  return { recentEmails, verificationCodes };
 }
 
 export function getTimeAgo(date: Date) {
@@ -81,4 +101,31 @@ export function getTimeAgo(date: Date) {
     return `${Math.floor(diff / 3600)}h`;
   }
   return `${Math.floor(diff / 86400)}d`;
+}
+
+export function decodeEmailBody(body: any): string {
+  if (body["mimeType"] === "multipart/alternative") {
+    return decodeEmailBody(body["parts"][0]);
+  } else if (body["mimeType"] === "text/plain") {
+    return base64URLdecode(body["body"]["data"]).join("");
+  } else if (body["mimeType"] === "text/html") {
+    return base64URLdecode(body["body"]["data"])
+      .join("")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s\w+="[^"]*"/g, "")
+      .replace(/[^a-zA-Z\s\d-]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  return "";
+}
+
+function base64URLdecode(str: string): string[] {
+  const base64Encoded = str.replace(/-/g, "+").replace(/_/g, "/");
+  const padding = str.length % 4 === 0 ? "" : "=".repeat(4 - (str.length % 4));
+  const base64WithPadding = base64Encoded + padding;
+  return atob(base64WithPadding)
+    .split("")
+    .map((char) => String.fromCharCode(char.charCodeAt(0)));
 }
