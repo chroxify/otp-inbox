@@ -1,9 +1,9 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "magic-code",
-  "title": "Magic Code",
+  "name": "otp-inbox",
+  "title": "OTP Inbox",
   "description": "View your latest email verficiation codes.",
-  "icon": "command-icon.png",
+  "icon": "icon.png",
   "author": "chroxify",
   "categories": [
     "Productivity"
@@ -11,9 +11,9 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "list-magic-codes",
-      "title": "List Magic Codes",
-      "description": "View your latest magic codes.",
+      "name": "otp-inbox",
+      "title": "OTP Inbox",
+      "description": "View your latest email verficiation codes.",
       "mode": "view"
     }
   ],

@@ -22,20 +22,21 @@ export async function getEmails(amount: number = 10) {
   const emails = [];
 
   for (const email of emailsOverview.messages) {
+    // Get the full email
     const fullEmail = await getEmailById(email.id);
 
     // Check if email is older than 10 minutes, if so just break the loop
     const receivedAt = new Date(parseInt(fullEmail["internalDate"], 10));
     const diffMinutes = Math.floor((new Date().getTime() - receivedAt.getTime()) / 60000);
 
-    if (diffMinutes > 300) {
+    if (diffMinutes > 10) {
       return emails;
     }
 
     emails.push(fullEmail);
   }
 
-  // Return the first `amount` emails
+  // Return the emails
   return emails;
 }
 
