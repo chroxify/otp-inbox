@@ -62,24 +62,35 @@ export function processEmails(emails: Email[]): {
       // Extract the verification code from the email
       const verificationCode = extractVerificationCode(body);
 
+      // Extract sender & sender email (format: Sender <email@domain.com>)
+      const sender = headers
+        .find((header) => header.name === "From")
+        ?.value?.replace(/<([^>]+)>/, "")
+        .trim();
+      const senderEmail = headers.find((header) => header.name === "From")?.value?.match(/<([^>]+)>/)?.[1] || "";
+
+      // Verify if code could be extracted
       if (!verificationCode) {
         // Add the email to the list of recent emails
         return recentEmails.push({
           code: null,
-          email: headers[0]["value"],
           receivedAt: new Date(parseInt(email["internalDate"], 10)),
-          sender: headers.find((header) => header.name === "From")?.value?.split(" ")[0] || "",
+          sender: {
+            name: sender || "",
+            email: senderEmail,
+          },
           emailText: body,
         });
       }
 
       // Add the verification code to the list
-      // TODO: Improve the sender name extraction
       verificationCodes.push({
         code: verificationCode,
-        email: headers[0]["value"],
         receivedAt: new Date(parseInt(email["internalDate"], 10)),
-        sender: headers.find((header) => header.name === "From")?.value?.split(" ")[0] || "",
+        sender: {
+          name: sender || "",
+          email: senderEmail,
+        },
         emailText: body,
       });
     } catch (error) {
