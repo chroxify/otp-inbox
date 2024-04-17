@@ -1,19 +1,21 @@
 # OTP Inbox
 
-OTP Inbox extracts and shows your recent email verificaiton codes directly in Raycast.
+The fastest way to fill in those pesky OTP codes from your email.
 
-I've tested OTP Inbox with quite a few of login verification emails, but it is very likely that some emails may not be detected correctly. If you encounter any issues, please open an issue or submit a pull request.
+**Please Note:** OTP Inbox currently only supports Gmail accounts.
+
+OTP Inbox has been tested with a variety of verification emails, but it may not work with all emails. If you encounter any issues, please open an issue or submit a pull request.
 
 ## Features
 
 - Automatically detects the OTP code from the email
 - Shows your recent email verification codes
 - Copy the code to your clipboard or paste directly into the active application
-- View recent emails - incase detection fails
+- View recent emails in case the OTP code was not detected correctly
 
 ## Configuration
 
-> **Note:** OTP Inbox requires you to bring your own Google client ID due to limitations within Raycast. You can create a new Google Cloud project and OAuth 2.0 client ID by following the steps below.
+> Due to Google restrictions within Raycast extensions, you will need to bring your own Google Client ID to use OTP Inbox. Follow the steps below to create a new Google Cloud project and create an OAuth 2.0 client ID.
 
 ### Create a new Google Cloud project
 
