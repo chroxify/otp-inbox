@@ -75,7 +75,7 @@ export default function OTPInbox() {
                     }}
                   />
                   <Action
-                    title={`Copy code to clipboard`}
+                    title={`Copy to Clipboard`}
                     icon={{ source: Icon.Clipboard }}
                     onAction={async () => {
                       await Clipboard.copy(code.code!);
