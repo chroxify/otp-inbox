@@ -17,6 +17,16 @@
       "mode": "view"
     }
   ],
+  "preferences": [
+    {
+      "name": "clientId",
+      "title": "Google Client ID",
+      "type": "password",
+      "description": "Your Google client ID. Click on \"About this extension\" to learn how to get it.",
+      "required": true,
+      "placeholder": "*********.apps.googleusercontent.com"
+    }
+  ],
   "dependencies": {
     "@raycast/api": "^1.71.3",
     "@raycast/utils": "^1.14.0",

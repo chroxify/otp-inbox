@@ -1,4 +1,13 @@
-import { ActionPanel, List, Action, Color, Icon, getFrontmostApplication, Detail } from "@raycast/api";
+import {
+  ActionPanel,
+  List,
+  Action,
+  Color,
+  Icon,
+  getFrontmostApplication,
+  openExtensionPreferences,
+  Detail,
+} from "@raycast/api";
 import { Clipboard, showHUD } from "@raycast/api";
 import { getEmails } from "./lib/gmail";
 import { getTimeAgo, processEmails } from "./lib/utils";
@@ -87,6 +96,11 @@ export default function OTPInbox() {
                       setVerificationCodes(null);
                     }}
                   />
+                  <Action
+                    title="Open Extension Preferences"
+                    icon={{ source: Icon.Gear }}
+                    onAction={openExtensionPreferences}
+                  />
                 </ActionPanel>
               }
             />
@@ -111,6 +125,11 @@ export default function OTPInbox() {
                     shortcut={{ modifiers: ["cmd"], key: "e" }}
                     target={<Detail markdown={`### Email from ${email.sender}\n\n${email.emailText}`} />}
                   />
+                  <Action
+                    title="Open Extension Preferences"
+                    icon={{ source: Icon.Gear }}
+                    onAction={openExtensionPreferences}
+                  />
                 </ActionPanel>
               }
             />
@@ -128,6 +147,11 @@ export default function OTPInbox() {
                   setVerificationCodes(null);
                   await getVerificationCodes();
                 }}
+              />
+              <Action
+                title="Open Extension Preferences"
+                icon={{ source: Icon.Gear }}
+                onAction={openExtensionPreferences}
               />
             </ActionPanel>
           }
